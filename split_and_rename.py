@@ -150,8 +150,41 @@ def split_and_rename_pdf():
                 writer.write(f)
             count += 1
         
-        # Show results
+     # Show results
         if mismatches:
+            # Create detailed mismatch report file
+            report_path = os.path.join(output_folder, "MISMATCH_REPORT.txt")
+            with open(report_path, "w", encoding="utf-8") as report:
+                report.write("=" * 80 + "\n")
+                report.write("DATA MISMATCH REPORT\n")
+                report.write("=" * 80 + "\n\n")
+                report.write(f"Total files created: {count}\n")
+                report.write(f"Total mismatches found: {len(mismatches)}\n")
+                report.write(f"Validation success rate: {((count - len(mismatches)) / count * 100):.1f}%\n\n")
+                report.write("=" * 80 + "\n\n")
+                
+                for m in mismatches:
+                    report.write(f"MISMATCH #{mismatches.index(m) + 1}\n")
+                    report.write(f"{'-' * 80}\n")
+                    report.write(f"Row/Page Number: {m['row']}\n")
+                    report.write(f"Filename: {m['filename']}\n\n")
+                    
+                    report.write(f"AMOUNT COMPARISON:\n")
+                    report.write(f"  Excel (Importe a pagar): {m['excel_amount']}\n")
+                    report.write(f"  PDF (Importe a liquidar): {m['pdf_amount']}\n")
+                    amount_match = "✓ MATCH" if (m['pdf_amount'] and m['excel_amount'] and 
+                                                 abs(m['pdf_amount'] - m['excel_amount']) < 0.01) else "✗ MISMATCH"
+                    report.write(f"  Status: {amount_match}\n\n")
+                    
+                    report.write(f"ACCOUNT COMPARISON:\n")
+                    report.write(f"  Excel (Cuenta del tercer/cesionario): {m['excel_account']}\n")
+                    report.write(f"  PDF (Cuenta): {m['pdf_account']}\n")
+                    account_match = "✓ MATCH" if (m['pdf_account'] and m['excel_account'] and 
+                                                  m['pdf_account'] == m['excel_account']) else "✗ MISMATCH"
+                    report.write(f"  Status: {account_match}\n\n")
+                    report.write("=" * 80 + "\n\n")
+            
+            # Show summary in messagebox
             mismatch_msg = "⚠️ DATA MISMATCHES FOUND!\n\n"
             for m in mismatches[:5]:  # Show first 5
                 mismatch_msg += f"Row/Page {m['row']}:\n"
@@ -163,6 +196,7 @@ def split_and_rename_pdf():
             
             mismatch_msg += f"Total mismatches: {len(mismatches)} out of {count}\n"
             mismatch_msg += f"Files created in: {output_folder}\n\n"
+            mismatch_msg += f"📄 Detailed report saved to:\nMISMATCH_REPORT.txt\n\n"
             mismatch_msg += "⚠️ Please verify the data alignment!"
             
             messagebox.showwarning("Validation Warning", mismatch_msg)
