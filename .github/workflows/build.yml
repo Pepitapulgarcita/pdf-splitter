@@ -1,0 +1,22 @@
+name: Build EXE
+on: [push]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          pip install pypdf pandas openpyxl pyinstaller
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller --onefile --noconsole split_and_rename.py
+      - name: Upload Executable
+        uses: actions/upload-artifact@v3
+        with:
+          name: Splitter-Executable
+          path: dist/split_and_rename.exe
