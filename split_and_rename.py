@@ -27,7 +27,9 @@ def split_and_rename_pdf():
                                           filetypes=[("PDF files", "*.pdf")])
     if not pdf_path: return
 
-    output_folder = "Splitted_PDFs"
+    # Use Downloads folder
+    downloads_path = os.path.join(os.path.expanduser("~"), "Downloads")
+    output_folder = os.path.join(downloads_path, "Splitted_PDFs")
 
     try:
         # 2. Load Data
