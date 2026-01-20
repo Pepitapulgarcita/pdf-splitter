@@ -13,15 +13,21 @@ def clean_filename_part(val):
     return s
 
 def normalize_account(account):
-    """Remove all spaces from account number for comparison"""
+    """Remove all spaces and IBAN prefix from account number for comparison"""
     if pd.isna(account): return ""
-    return str(account).replace(' ', '').replace('\xa0', '').strip()
+    # Remove spaces, non-breaking spaces, and IBAN prefix
+    s = str(account).replace(' ', '').replace('\xa0', '').strip()
+    # Remove 'IBAN' prefix if present (case insensitive)
+    s = re.sub(r'^IBAN', '', s, flags=re.IGNORECASE)
+    return s
 
 def normalize_amount(amount):
-    """Normalize amount for comparison (remove spaces, convert to float)"""
+    """Normalize amount for comparison (remove EUR, spaces, convert to float)"""
     if pd.isna(amount): return None
-    # Convert to string, remove spaces, replace comma with dot
-    s = str(amount).replace(' ', '').replace('\xa0', '').replace(',', '.').strip()
+    # Convert to string, remove EUR, spaces, replace comma with dot
+    s = str(amount).replace(' ', '').replace('\xa0', '').replace('EUR', '').replace('€', '').strip()
+    # Replace comma with dot for decimal
+    s = s.replace(',', '.')
     try:
         return float(s)
     except:
@@ -150,7 +156,7 @@ def split_and_rename_pdf():
                 writer.write(f)
             count += 1
         
-     # Show results
+        # Show results
         if mismatches:
             # Create detailed mismatch report file
             report_path = os.path.join(output_folder, "MISMATCH_REPORT.txt")
@@ -211,4 +217,5 @@ def split_and_rename_pdf():
         messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
 if __name__ == "__main__":
+    split_and_rename_pdf()
     split_and_rename_pdf()
