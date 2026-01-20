@@ -6,9 +6,10 @@ from tkinter import filedialog, messagebox
 import re
 
 def clean_filename_part(val):
-    # Convert to string and remove "/"
+    if pd.isna(val): return "MissingData"
     s = str(val).replace('/', '')
-    # Replace non-breaking spaces and multiple spaces with a single space
+    # Removes non-breaking spaces (\xa0) and multiple spaces
+    s = s.replace('\xa0', ' ')
     s = re.sub(r'\s+', ' ', s).strip()
     return s
 
@@ -34,7 +35,11 @@ def split_and_rename_pdf():
             df = pd.read_csv(excel_path)
         else:
             df = pd.read_excel(excel_path)
-            
+       
+        # --- CRITICAL FIX: Clean the column names ---
+        # This removes the invisible spaces from "  Año / Nº..."
+        df.columns = [str(col).strip().replace('\xa0', ' ') for col in df.columns]    
+        
         reader = PdfReader(pdf_path)
         num_pages = len(reader.pages)
         num_rows = len(df)
@@ -42,9 +47,16 @@ def split_and_rename_pdf():
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
 
-        # 3. Process
+        # 3. Process Updated check using cleaned column names
+        required_cols = ["Año / Nº de justificante", "Asociado a Año / Nº", "Importe a pagar"]
+        for col in required_cols:
+            if col not in df.columns:
+                messagebox.showerror("Column Error", 
+                    f"Required column '{col}' not found.\n\n"
+                    f"Found columns: {list(df.columns)}")
+                return
+
         count = 0
-        # Determine the range to process (matching rows to pages)
         limit = min(num_pages, num_rows)
         
         for i in range(limit):
