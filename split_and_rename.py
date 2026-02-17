@@ -153,8 +153,8 @@ def split_and_rename_pdf():
             p2 = clean_filename_part(row["Asociado a Año / Nº"], allow_blank_underscore=True)
             p3 = clean_filename_part(row["Importe a pagar"])
             
-            # Proposed final filename
-            final_filename = f"{p1}_{p2}_{p3}.pdf"
+            # Proposed final filename (prefixed with EXTRACTO SANTANDER)
+            final_filename = f"EXTRACTO_SANTANDER_{p1}_{p2}_{p3}.pdf"
             final_filename = re.sub(r'[<>:"/\\|?*]', '', final_filename)
             final_path = os.path.join(output_folder, final_filename)
             
